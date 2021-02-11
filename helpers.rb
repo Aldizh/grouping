@@ -57,7 +57,7 @@ end
 def sync_phone_hash(row, phone_hash, lineno)
   phone1 = row[2] && row[2].size && parse_phone_text(row[2])
   phone2 = row[3] && row[3].size && parse_phone_text(row[3])
-  if !phone_hash[phone1]
+  if phone1 && !phone_hash[phone1]
     if phone2 && phone_hash[phone2]
       phone_hash[phone1] = phone_hash[phone2]
     else
@@ -65,7 +65,7 @@ def sync_phone_hash(row, phone_hash, lineno)
     end
   end
 
-  if !phone_hash[phone2]
+  if phone2 && !phone_hash[phone2]
     if phone1 && phone_hash[phone1]
       phone_hash[phone2] = phone_hash[phone1]
     else

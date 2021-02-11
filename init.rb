@@ -30,31 +30,29 @@ csv_file.each do |row|
     headers = row
   else
     presonId = csv_file.lineno + 1
-
     # determine column mappers
     case matchingCriteria
     when 1 # email check
       if (headers.size == 5)
         email = row[3] && row[3].size && row[3]
-        if !email_hash[email]
-          email_hash[email] = csv_file.lineno + 1
+        if email && !email_hash[email]
+          email_hash[email] = presonId
         end
-        presonId = email_hash[email]
+        presonId = email_hash[email] || presonId
       else
-        email_hash = sync_email_hash(row, email_hash, csv_file.lineno + 1)
-        presonId = email_hash[row[4]]
+        email_hash = sync_email_hash(row, email_hash, presonId)
+        presonId = email_hash[row[4]] || presonId
       end
     when 2 # phone check
       phone1 = row[2] && row[2].size && parse_phone_text(row[2])
       if (headers.size == 5)
-        if !phone_hash[phone1]
+        if phone1 && !phone_hash[phone1]
           phone_hash[phone1] = csv_file.lineno + 1
         end
-        presonId = phone_hash[phone1]
       else
         phone_hash = sync_phone_hash(row, phone_hash, csv_file.lineno + 1)
-        presonId = phone_hash[phone1]
       end
+      presonId = phone_hash[phone1] || csv_file.lineno + 1
     when 3 # email or phone check
       if (headers.size == 5)
         phone1 = row[2] && row[2].size && parse_phone_text(row[2])
