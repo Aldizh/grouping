@@ -17,10 +17,10 @@ end
 
 matchingCriteria = get_criteria_from_user # user input for matching criteria 
 
-data = [] # final output
+output = [] # final output
 headers = [] # header row
 phone_hash = {} # to mark unique phone occurences e.g: "5551236789": "3"  
-email_hash = {} # to mark unique email occurences e.g: "test@gmail.com": "10" 
+email_dict = {} # to mark unique email occurences e.g: "test@gmail.com": "10" 
 phone_or_email = {} # a combination of the above
 
 # input data
@@ -29,23 +29,24 @@ csv_file.each do |row|
   if headers.size == 0
     headers = row
   else
-    presonId = csv_file.lineno + 1
+    presonId = csv_file.lineno + 1 # row uniqueness tag
+    short_file = headers.size == 5 # contains only one row with matching data
     # determine column mappers
     case matchingCriteria
     when 1 # email check
-      if (headers.size == 5)
-        email = row[3] && row[3].size && row[3]
-        if email && !email_hash[email]
-          email_hash[email] = presonId
+      if (short_file)
+        email = get_valid_email(row)
+        if email && !email_dict[email]
+          email_dict[email] = presonId
         end
-        presonId = email_hash[email] || presonId
+        presonId = email_dict[email] || presonId
       else
-        email_hash = sync_email_hash(row, email_hash, presonId)
-        presonId = email_hash[row[4]] || presonId
+        email_dict = update_email_dict(row, email_dict, presonId)
+        presonId = email_dict[row[4]] || presonId
       end
     when 2 # phone check
       phone1 = row[2] && row[2].size && parse_phone_text(row[2])
-      if (headers.size == 5)
+      if (short_file)
         if phone1 && !phone_hash[phone1]
           phone_hash[phone1] = csv_file.lineno + 1
         end
@@ -54,9 +55,9 @@ csv_file.each do |row|
       end
       presonId = phone_hash[phone1] || csv_file.lineno + 1
     when 3 # email or phone check
-      if (headers.size == 5)
+      if (short_file)
         phone1 = row[2] && row[2].size && parse_phone_text(row[2])
-        email = row[3]
+        email = get_valid_email(row)
         if !phone_or_email[phone1]
           if phone_or_email[email]
             phone_or_email[phone1] = phone_or_email[email]
@@ -73,13 +74,13 @@ csv_file.each do |row|
         presonId = phone_or_email[phone1]
       else
         phone1 = row[2] && row[2].size && parse_phone_text(row[2])
-        phone_or_email = sync_phone_or_email_hash(row, phone_or_email, csv_file.lineno + 1)
+        phone_or_email = sync_phone_or_email_dict(row, phone_or_email, csv_file.lineno + 1)
         presonId = phone_or_email[phone1]
       end
     end
 
     presonId > 0 ? row.unshift(presonId) : row.unshift(csv_file.lineno + 1)
-    data << row
+    output << row
   end  
 end
 
@@ -87,7 +88,7 @@ end
 headers.unshift('personID')
 CSV.open('output.csv', 'w') do |csv|
   csv << headers
-  data.each do |row|
+  output.each do |row|
     csv << row
   end
   

@@ -42,10 +42,13 @@ identifier of the person each row represents prepended to the row.
 ## Solution approach
 
 - Create a uniqueness map of the criteria based on columns
-- For the matching criteria ensure they all map to the same row to avoid data integrity issues
-- Utilize this map to check if the value has been seen before
-- If so use the identifier from the row we saw, otherwise use the next consecutive index
-- Process the input csv by row and only insert rows unique by the criteria to the final output
+- Matching criteria will determine the key of the row entry on this map
+- We will call this key personID
+- Iterate through the rows
+  - If there is a value for matching criteria (email/phone)
+    - If it exists on our map tag with the same person ID
+    - Otherwise tag with a new person ID
+- Basically we only tag rows with a new personID that are unique by the criteria
 
 ## Assumtions
 - Accounting only for U.S numbers

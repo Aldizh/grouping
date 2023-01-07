@@ -33,25 +33,25 @@ def get_criteria_from_user
   return criteria
 end
 
-def sync_email_hash(row, email_hash, lineno)
+def update_email_dict(row, email_dict, lineno)
   email1 = row[4] && row[4].size && row[4]
   email2 = row[5] && row[5].size && row[5]
-  if email1 && !email_hash[email1]
-    if email2 && email_hash[email2]
-      email_hash[email1] = email_hash[email2]
+  if email1 && !email_dict[email1]
+    if email2 && email_dict[email2]
+      email_dict[email1] = email_dict[email2]
     else
-      email_hash[email1] = lineno
+      email_dict[email1] = lineno
     end
   end
 
-  if email2 && !email_hash[email2]
-    if email1 && email_hash[email1]
-      email_hash[email2] = email_hash[email1]
+  if email2 && !email_dict[email2]
+    if email1 && email_dict[email1]
+      email_dict[email2] = email_dict[email1]
     else
-      email_hash[email2] = lineno
+      email_dict[email2] = lineno
     end
   end
-  return email_hash
+  return email_dict
 end
 
 def sync_phone_hash(row, phone_hash, lineno)
@@ -75,7 +75,7 @@ def sync_phone_hash(row, phone_hash, lineno)
   return phone_hash
 end
 
-def sync_phone_or_email_hash(row, phone_or_email, lineno)
+def sync_phone_or_email_dict(row, phone_or_email, lineno)
   phone1 = row[2] && row[2].size && parse_phone_text(row[2])
   phone2 = row[3] && row[3].size && parse_phone_text(row[3])
   email1 = row[4]
@@ -125,4 +125,15 @@ def sync_phone_or_email_hash(row, phone_or_email, lineno)
     end
   end
   return phone_or_email
+end
+
+def get_valid_email(row)
+  email = ''
+  row.each do |value|
+    if (value =~ URI::MailTo::EMAIL_REGEXP)
+      email = value
+    end
+  end
+
+  return email
 end
